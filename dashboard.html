@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+ <html lang="en"> 
+<head> 
+<meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Hospital Dashboard</title>
+ <style> 
+body{ 
+margin:0;
+ font-family:'Segoe UI',sans-serif; 
+background:#f5f7fb;
+ }
+ /* SIDEBAR */ 
+.sidebar{
+ position:fixed;
+ top:0;
+ left:0;
+ width:220px;
+ height:100%;
+ background:#1e293b;
+ color:white;
+ padding:20px;
+ } 
+.sidebar h2{ 
+margin-bottom:20px; 
+} 
+.sidebar a{ 
+display:block; 
+margin:10px 0; 
+color:white; 
+text-decoration:none; 
+padding:8px;
+ border-radius:5px;
+ } 
+.sidebar a:hover{
+ background:#334155; 
+} 
+/* MAIN */ 
+.main{ 
+margin-left:240px;
+ } /* NAVBAR */
+ .navbar{
+ display:flex;
+ justify-content:space-between;
+ align-items:center; 
+padding:15px 40px; 
+background:white;
+ box-shadow:0 2px 10px rgba(0,0,0,0.05);
+ }
+ /* LOGO */
+ .logo{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ } 
+.logo img{
+ width:40px;
+ height:40px; 
+border-radius:50%;
+ }
+ .logo h2{
+ margin:0;
+ color:#2563eb;
+ } 
+/* CONTACT */ 
+.contact{ 
+display:flex; 
+gap:10px; 
+}
+ .call-btn, .email-btn{ 
+padding:8px 15px;
+ border-radius:20px; 
+color:#fff;
+ font-size:14px; 
+} 
+.call-btn{ 
+background:#fbbf24;
+ }
+ .email-btn{
+ background:#38bdf8;
+ }
+ .top-image{
+ position:absolute; 
+ right:100px; 
+ top:100px;
+  }
+.top-image img{
+    width: 120px;
+   height:200px; 
+   border-radius:10px;
+    object-fit:cover;
+     }
+ /* HERO */ 
+ .hero{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ padding:40px; 
+ }
+.hero-text h1{ 
+font-size:35px; 
+ margin-bottom:10px;
+ } 
+.hero img{
+ width:320px; 
+ border-radius:20px;
+ } 
+ /* CARDS */ 
+.cards{ 
+display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); 
+ gap:20px; 
+ padding:40px;
+}
+.card{
+background:white; 
+padding:25px; 
+border-radius:15px; 
+box-shadow:0 10px 20px rgba(0,0,0,0.08); 
+text-align:center; 
+transition:0.3s; 
+cursor:pointer; } 
+.card:hover{
+transform:translateY(-8px);
+} 
+.card p{
+font-size:28px; 
+font-weight:bold; 
+margin-top:10px; 
+color:#2563eb; 
+} 
+/* DOCTOR LIST */ 
+#doctorList p{
+font-size:14px; 
+background:#f1f5f9; 
+padding:6px; 
+border-radius:8px; 
+margin:5px 0; color:#000; 
+} 
+
+
+</style> 
+</head> 
+<body>
+     <!-- SIDEBAR -->
+       <div class="sidebar"> 
+        <h2>🏥 Hospital</h2>
+         <a href="patients.html">Patients</a> 
+         <a href="appointments.html">Appointments</a> 
+         <a href="billing.html">Billing</a> 
+         <a href="doctors.html">Doctors</a>
+          <button onclick="logout()">Logout</button> 
+        </div>
+        <div class="main">
+             <!-- NAVBAR --> 
+            <div class="navbar">
+                <div class="logo"> 
+                    <img src="https://cdn-icons-png.flaticon.com/512/2966/2966486.png"> 
+                    <h2>Arogya Plus</h2> 
+                </div> 
+                <div class="contact">
+                     <div class="call-btn">📞 +91 9368359739</div>
+                      <div class="email-btn">📧 arogya@gmail.com</div> 
+                    </div> 
+                </div>
+                <!-- HERO --> 
+                 <div class="hero">
+                     <div class="hero-text"> 
+                        <h1>Welcome to Arogya Plus</h1>
+                         <p>Manage patients, doctors & billing easily.</p> 
+                        </div> 
+                        <div class="top-image"> 
+                            <img src="picture.png" alt="hospital image"> 
+                        </div> 
+                 </div> 
+                    <!-- CARDS -->
+                  <div class="cards"> 
+                        <div class="card" onclick="openPage('patients.html')"> 
+                            <h3>👤 Patients</h3> 
+                            <p id="pCount">0</p>
+                        </div> 
+                        <div class="card" onclick="openPage('doctors.html')"> 
+                            <h3>👨‍⚕️ Doctors</h3>
+                             <p id="dCount">0</p> 
+                             <div id="doctorList"></div>
+                       </div> 
+                       <div class="card" onclick="openPage('appointments.html')">
+                                 <h3>📅 Appointments</h3>
+                                  <p id="aCount">0</p>
+                       </div>
+                       <div class="card" onclick="openPage('billing.html')">
+                                     <h3>💰 Billing</h3> 
+                                     <p id="bCount">0</p> 
+                       </div> 
+                </div>
+       </div> 
+                             
+                             
+                             
+                             
+                             
+ <script>
+    let user = null;
+
+try {
+
+    user = JSON.parse(localStorage.getItem("user"));
+
+} catch(err) {
+
+    localStorage.removeItem("user");
+
+}
+
+if(!user){
+
+    alert("Login First");
+
+    window.location.replace("login.html");
+
+}
+
+
+// LOGIN CHECK
+if(!user){
+    window.location = "login.html";
+}
+
+// PAGE TITLE ROLE BASE
+window.onload = function()
+{
+    let title = document.querySelector(".hero-text h1");
+    if(title){
+        title.innerText = user.role === "admin" ? "Admin Dashboard" : "Doctor Dashboard";
+    }
+
+    // ROLE BASE ACCESS
+    if (user.role === "doctor") {
+
+    let patientBtn = document.querySelector('[onclick="openPage(\'patients.html\')"]');
+    let doctorBtn = document.querySelector('[onclick="openPage(\'doctors.html\')"]');
+    let billingBtn = document.querySelector('[onclick="openPage(\'billing.html\')"]');
+
+    if (patientBtn) patientBtn.style.display = "none";
+    if (doctorBtn) doctorBtn.style.display = "none";
+    if (billingBtn) billingBtn.style.display = "none";
+}
+
+    loadDashboard();
+}
+
+// NAV
+function openPage(page){
+    window.location.href = page;
+}
+
+// LOGOUT
+function logout(){
+    localStorage.removeItem("user");
+    window.location = "login.html";
+}
+
+// DASHBOARD DATA
+
+
+function loadDashboard() {
+
+    fetch("http://localhost:3000/doctors")
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("dCount").innerText = data.length;
+
+        let list = "";
+
+        data.forEach(doc => {
+
+            list += `
+                <p>
+                    Dr. ${doc.name} - ${doc.specialization}
+                </p>
+            `;
+
+        });
+
+        document.getElementById("doctorList").innerHTML = list;
+
+    })
+
+
+
+    
+     // PATIENTS
+    fetch("http://localhost:3000/patients")
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("pCount").innerText = data.length;
+    })
+    .catch(err => console.log(err));
+
+
+    // DOCTORS
+    fetch("http://localhost:3000/doctors")
+    .then(res => res.json())
+    .then(data => {
+
+        document.getElementById("dCount").innerText = data.length;
+
+        let list = "";
+
+        data.forEach(doc => {
+            list += `<p>Dr. ${doc.name} - ${doc.specialization}</p>`;
+        });
+
+        document.getElementById("doctorList").innerHTML = list;
+    })
+    .catch(err => console.log(err));
+
+
+    // APPOINTMENTS (IMPORTANT FIX)
+    fetch("http://localhost:3000/appointments")
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("aCount").innerText = data.length;
+    })
+    .catch(err => console.log(err));
+
+
+    // BILLS
+    fetch("http://localhost:3000/bills")
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("bCount").innerText = data.length;
+    })
+    .catch(err => console.log(err));
+
+}
+</script>
+ </body> 
+</html>

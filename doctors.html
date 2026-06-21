@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Doctors</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+    font-family:Arial;
+    background:#f4f6f9;
+}
+
+.container{
+    width:800px;
+    margin:auto;
+    padding:20px;
+}
+
+h2{
+    text-align:center;
+    color:#2563eb;
+}
+
+.card{
+    background:#fff;
+    padding:15px;
+    margin:10px 0;
+    border-radius:8px;
+    box-shadow:0 0 8px rgba(0,0,0,0.1);
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+}
+
+button{
+    background:#2563eb;
+    color:#fff;
+    padding:10px;
+    border:none;
+    cursor:pointer;
+    margin-top:5px;
+}
+
+button:hover{
+    background:#1e40af;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🩺 Doctors & Appointments</h2>
+
+<div class="card" id="formBox">
+<input id="name" placeholder="Doctor Name">
+<input id="specialization" placeholder="Specialization">
+<input id="phone" placeholder="Phone">
+<input id="email" placeholder="Email">
+<input id="timing" placeholder="Timing">
+<button onclick="save()">Save Doctor</button>
+</div>
+
+<div id="list"></div>
+
+<hr>
+
+<h2>📅 Appointments</h2>
+<div id="appointments"></div>
+
+</div>
+
+<script>
+
+let user = localStorage.getItem("user");
+
+if(user){
+    user = JSON.parse(user);
+}
+// ================= LOAD DOCTORS =================
+function loadDoctors(){
+
+fetch("http://localhost:3000/doctors")
+.then(r=>r.json())
+.then(data=>{
+
+let html="";
+
+data.forEach(d=>{
+html += `
+<div class="card">
+<h4>🩺 ${d.name}</h4>
+<p><b>Specialization:</b> ${d.specialization}</p>
+<p><b>Phone:</b> ${d.phone}</p>
+<p><b>Email:</b> ${d.email}</p>
+<p><b>Timing:</b> ${d.timing}</p>
+</div>
+`;
+});
+
+document.getElementById("list").innerHTML = html;
+})
+.catch(err=>{
+console.log("Doctor error:",err);
+document.getElementById("list").innerHTML="Error loading doctors";
+});
+}
+
+// ================= LOAD APPOINTMENTS =================
+function loadAppointments(){
+
+fetch("http://localhost:3000/appointments")
+.then(r=>r.json())
+.then(data=>{
+
+let html="";
+
+data.forEach(a=>{
+html += `
+<div class="card">
+<p><b>Patient:</b> ${a.patient_name}</p>
+<p><b>Doctor:</b> ${a.doctor_name}</p>
+<p><b>Date:</b> ${a.date}</p>
+<p><b>Time:</b> ${a.time}</p>
+</div>
+`;
+});
+
+document.getElementById("appointments").innerHTML = html;
+})
+.catch(err=>{
+console.log("Appointment error:",err);
+document.getElementById("appointments").innerHTML="Error loading appointments";
+});
+}
+
+// ================= SAVE DOCTOR =================
+function save(){
+
+let name=document.getElementById("name").value.trim();
+let specialization=document.getElementById("specialization").value.trim();
+let phone=document.getElementById("phone").value.trim();
+let email=document.getElementById("email").value.trim();
+let timing=document.getElementById("timing").value.trim();
+
+if(!name||!specialization||!phone||!email||!timing){
+alert("All fields required");
+return;
+}
+
+fetch("http://localhost:3000/doctors",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({name,specialization,phone,email,timing})
+})
+.then(()=>loadDoctors())
+.catch(err=>console.log(err));
+}
+
+// INIT
+loadDoctors();
+loadAppointments();
+</script>
+
+</body>
+</html>

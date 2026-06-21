@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Patients</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+    font-family: Arial;
+    background:#f4f6f9;
+}
+.container{
+    width:800px;
+    margin:auto;
+    padding:20px;
+}
+.header{
+    text-align:center;
+    margin-bottom:20px;
+}
+.header h1{
+    color:#2563eb;
+}
+.card{
+    background:white;
+    padding:15px;
+    margin:10px 0;
+    border-radius:8px;
+}
+input{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+}
+button{
+    padding:10px;
+    margin-top:5px;
+    background:#2563eb;
+    color:white;
+    border:none;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h1>🏥 Arogya Plus Hospital</h1>
+<p>Patient Management</p>
+</div>
+
+<div class="card">
+<input id="name" placeholder="Patient Name">
+<input id="age" type="number" placeholder="Age">
+<input id="phone" placeholder="Phone">
+<input id="disease" placeholder="Disease">
+
+<button onclick="save()">Save</button>
+</div>
+
+<div id="list"></div>
+
+</div>
+
+<script>
+let user = localStorage.getItem("user");
+
+if(user){
+    user = JSON.parse(user);
+}
+let editId = null;
+
+// ================= LOAD =================
+function load(){
+fetch("http://localhost:3000/patients")
+.then(res => res.json())
+.then(data => {
+
+let html = "";
+
+data.forEach(p => {
+
+html += `
+<div class="card">
+
+<h3>🏥 Patient Receipt</h3>
+
+<p><b>Name:</b> ${p.name}</p>
+<p><b>Age:</b> ${p.age}</p>
+<p><b>Phone:</b> ${p.phone}</p>
+<p><b>Disease:</b> ${p.disease}</p>
+
+<button onclick="edit(${p.id},'${p.name}','${p.age}','${p.phone}','${p.disease}')">Edit</button>
+<button onclick="del(${p.id})">Delete</button>
+<button onclick="pdf('${p.name}','${p.age}','${p.phone}','${p.disease}')">PDF</button>
+
+</div>
+`;
+});
+
+document.getElementById("list").innerHTML = html;
+
+});
+}
+
+// ================= SAVE =================
+function save(){
+
+let name = document.getElementById("name").value.trim();
+let age = document.getElementById("age").value.trim();
+let phone = document.getElementById("phone").value.trim();
+let disease = document.getElementById("disease").value.trim();
+
+if(!name || !age || !phone || !disease){
+alert("All fields required");
+return;
+}
+
+let data = { name, age, phone, disease };
+
+let url = editId 
+? `http://localhost:3000/patients/${editId}` 
+: "http://localhost:3000/patients";
+
+let method = editId ? "PUT" : "POST";
+
+fetch(url,{
+method,
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(data)
+})
+.then(()=>{
+editId = null;
+clear();
+load();
+});
+
+}
+
+// ================= EDIT =================
+function edit(id,n,a,p,d){
+editId = id;
+document.getElementById("name").value = n;
+document.getElementById("age").value = a;
+document.getElementById("phone").value = p;
+document.getElementById("disease").value = d;
+}
+
+// ================= DELETE =================
+function del(id){
+if(confirm("Delete this patient?")){
+fetch(`http://localhost:3000/patients/${id}`,{
+method:"DELETE"
+}).then(()=>load());
+}
+}
+
+// ================= CLEAR =================
+function clear(){
+document.getElementById("name").value="";
+document.getElementById("age").value="";
+document.getElementById("phone").value="";
+document.getElementById("disease").value="";
+}
+
+// ================= PDF (FIXED CLEAN OUTPUT) =================
+function pdf(n,a,p,d){
+
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF();
+
+doc.setFont("helvetica");
+doc.setFontSize(16);
+
+doc.text("Arogya Plus Hospital",20,20);
+
+doc.setFontSize(12);
+doc.text("Patient Receipt",20,30);
+
+doc.line(20,35,190,35);
+
+doc.text("Name: " + n,20,50);
+doc.text("Age: " + a,20,60);
+doc.text("Phone: " + p,20,70);
+doc.text("Disease: " + d,20,80);
+
+doc.save("patient.pdf");
+}
+
+// INIT
+load();
+
+</script>
+
+</body>
+</html>
